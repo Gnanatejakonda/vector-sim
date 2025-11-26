@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 # 1. Page Config
 st.set_page_config(page_title="Basis Transformation Sim", page_icon="📐")
-st.title("📐 Affine & Basis Transformation")
+st.title("📐 Basis Transformation")
 
 st.markdown("""
 **Theory Note:** 1. **Linear Rotation:** Only applies if Origin is (0,0) and axes are perpendicular.
@@ -128,3 +128,4 @@ else:
     plt.legend(loc='lower right')
     plt.title("Affine Transformation Simulation")
     st.pyplot(fig)
+
