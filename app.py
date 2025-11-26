@@ -78,7 +78,7 @@ else:
     # Draw Vectors
     draw_vec([1, 0], origin, 'red', 'Old X')
     draw_vec([0, 1], origin, 'red', 'Old Y')
-    draw_vec(v_std, origin, 'red', 'Vector Old')
+    draw_vec(v_std, origin, 'blue', 'Vector Old')
     
     draw_vec([b1x, b1y], origin, 'green', 'New b1')
     draw_vec([b2x, b2y], origin, 'green', 'New b2')
@@ -91,4 +91,5 @@ else:
     plt.title("Vector Simulation")
     
     # 6. Push the plot to the web page
+
     st.pyplot(fig)
