@@ -7,8 +7,8 @@ st.set_page_config(page_title="Basis Transformation Sim", page_icon="📐")
 st.title("📐 Affine & Basis Transformation")
 
 st.markdown("""
-**Theory Note:** 1. **Origin Shift:** Calculates $V_{relative} = V_{global} - Origin$.
-2. **Orthogonality:** A Rotation Matrix $R$ only exists if the new axes are perpendicular (90°).
+**Theory Note:** 1. **Linear Rotation:** Only applies if Origin is (0,0) and axes are perpendicular.
+2. **Affine Transform:** If Origin is shifted, we must subtract the offset first.
 """)
 
 # 2. Sidebar Inputs
@@ -26,8 +26,8 @@ with st.sidebar:
     b2y = st.number_input("Axis 2 (y) coeff", value=1.0, step=0.1)
     
     st.header("3. Origin Location")
-    c1 = st.number_input("Origin X", value=1.0, step=0.5)
-    c2 = st.number_input("Origin Y", value=1.0, step=0.5)
+    c1 = st.number_input("Origin X", value=0.0, step=0.5)
+    c2 = st.number_input("Origin Y", value=0.0, step=0.5)
 
 # 3. Calculations
 v_global = np.array([vx, vy])       
@@ -35,16 +35,18 @@ origin_pos = np.array([c1, c2])
 basis_matrix = np.array([[b1x, b2x], 
                          [b1y, b2y]])
 
-# LINEARITY CHECK: Calculate Determinant
+# CONDITIONS CHECK
 det = np.linalg.det(basis_matrix)
 
-# ORTHOGONALITY CHECK: Dot product = x1*x2 + y1*y2
+# A) Is it Perpendicular? (Dot product close to 0)
 dot_prod = (b1x * b2x) + (b1y * b2y)
-# We consider it perpendicular if dot product is very close to 0
 is_orthogonal = abs(dot_prod) < 1e-5
 
+# B) Is the Origin at (0,0)?
+is_centered = np.linalg.norm(origin_pos) < 1e-5
+
 if abs(det) < 1e-10:
-    st.error("⚠️ LINEAR DEPENDENCE ERROR: The basis vectors are parallel. They form a line, not a 2D plane.")
+    st.error("⚠️ LINEAR DEPENDENCE ERROR: The basis vectors are parallel.")
 else:
     # --- Transformation Logic ---
     v_relative = v_global - origin_pos
@@ -59,15 +61,14 @@ else:
     with col2:
         st.success(f"**New Basis Coords (Green):**\n\n [{v_new_coords[0]:.2f}, {v_new_coords[1]:.2f}]")
         
-        # --- NEW LOGIC FOR ROTATION MATRIX ---
-        if is_orthogonal:
-            st.write("✅ **Axes are Perpendicular (90°)**")
+        # --- CONDITIONAL ROTATION MATRIX DISPLAY ---
+        if is_orthogonal and is_centered:
+            st.write("✅ **Pure Rotation detected**")
             
-            # Calculate angle of the first basis vector
+            # Calculate angle
             angle_rad = np.arctan2(b1y, b1x)
             angle_deg = np.degrees(angle_rad)
             
-            # Create Rotation Matrix R
             rot_matrix = np.array([
                 [np.cos(angle_rad), -np.sin(angle_rad)],
                 [np.sin(angle_rad),  np.cos(angle_rad)]
@@ -78,12 +79,17 @@ else:
                      f"{rot_matrix[0,0]:.2f} & {rot_matrix[0,1]:.2f} \\\\ " + 
                      f"{rot_matrix[1,0]:.2f} & {rot_matrix[1,1]:.2f}" + 
                      r" \end{bmatrix}")
-        else:
-            st.warning("⚠️ **Axes are NOT Perpendicular**")
-            st.write("The new basis vectors form a skewed grid (Shear).")
-            st.error("❌ Rotation Matrix is NOT possible.")
+                     
+        elif not is_centered:
+            st.warning("⚠️ **Affine Shift Detected**")
+            st.write("Origin is NOT (0,0). This is a translation + rotation.")
+            st.write("A pure Rotation Matrix only applies to fixed origins.")
+            
+        elif not is_orthogonal:
+            st.warning("⚠️ **Skewed Axes**")
+            st.write("Axes are not perpendicular.")
 
-    # 5. Visualization (Kept exactly the same)
+    # 5. Visualization
     fig, ax = plt.subplots(figsize=(8, 8))
     
     limit = max(np.linalg.norm(v_global), np.linalg.norm(origin_pos), 4.0) * 1.5
@@ -109,7 +115,7 @@ else:
                   angles='xy', scale_units='xy', scale=1, 
                   color=color, label=label, width=width)
 
-    if np.linalg.norm(origin_pos) > 0.1:
+    if not is_centered:
         draw_arrow(origin_pos, [0,0], 'gray', 'Origin Shift', width=0.004)
         ax.text(c1, c2, " New Origin", color='green', fontsize=8)
 
