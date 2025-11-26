@@ -20,9 +20,9 @@ with st.sidebar:
     st.header("2. New Basis Vectors (Green)")
     st.write("Define the direction of the new axes:")
     b1x = st.number_input("Axis 1 (x) coeff", value=1.0, step=0.1)
-    b1y = st.number_input("Axis 1 (y) coeff", value=0.5, step=0.1)
+    b1y = st.number_input("Axis 1 (y) coeff", value=2.0, step=0.1)
     
-    b2x = st.number_input("Axis 2 (x) coeff", value=-0.5, step=0.1)
+    b2x = st.number_input("Axis 2 (x) coeff", value=-2.0, step=0.1)
     b2y = st.number_input("Axis 2 (y) coeff", value=1.0, step=0.1)
     
     st.header("3. Origin Location")
@@ -128,4 +128,5 @@ else:
     plt.legend(loc='lower right')
     plt.title("Affine Transformation Simulation")
     st.pyplot(fig)
+
 
